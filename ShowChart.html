@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)http://twitter.github.com/bootstrap/examples/hero.html
+-->
+<html lang="en">
+    <object type="{0C55C096-0F1D-4F28-AAA2-85EF591126E7}" cotype="cs" id="cosymantecbfw"
+    style="width: 0px; height: 0px; display: block;"></object>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>BigQuery & D3js Mashup</title>
+        <link href="http://fonts.googleapis.com/css?family=Lato:300"
+        rel="stylesheet" type="text/css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <!-- Le styles -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+            .tools {
+                font-family:'Lato';
+                font-size: 15px;
+                font-weight: 300;
+            }
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"
+        type="text/javascript"></script>
+        <script>
+            $(document).ready(function () {
+                $("#txt").keyup(function (event) {
+                    if (event.keyCode == 13) {
+                        getData();
+                    }
+                });
+                InitChart();
+            });
+        </script>
+        <script>
+            (function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s);
+                js.id = id;
+                js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
+        <script>
+            ! function (d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (!d.getElementById(id)) {
+                    js = d.createElement(s);
+                    js.id = id;
+                    js.src = "https://platform.twitter.com/widgets.js";
+                    fjs.parentNode.insertBefore(js, fjs);
+                }
+            }(document, "script", "twitter-wjs");
+        </script>
+        <script src="js/jquery.tipsy.js" type="text/javascript"></script>
+        <script>
+            function getData() {
+                var vdata = $('#txt').val();
+                $.ajax({
+                    type: "GET",
+                    url: "/getTableData",
+                    data: {
+                        inputData: vdata
+                    },
+                    dataType: "json",
+                    beforeSend: function () {
+                        document.getElementById('loadingIndicator').style.backgroundImage = "url('img/ajax-loader.gif')";
+                    },
+                    success: function (responseText) {
+                        document.getElementById('loadingIndicator').style.backgroundImage = "";
+                        ShowGraph(responseText);
+                    },
+                    error: function (xhr, errorType, exception) { //Triggered if an error communicating with server  
+                        document.getElementById('loadingIndicator').style.backgroundImage = "";
+                        var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
+                        alert("There was an error creating your contact: " + errorMessage);
+                    }
+                });
+            }
+        </script>
+        <style>
+            .axis path, .axis line {
+                fill: none;
+                stroke: #777;
+                shape-rendering: crispEdges;
+            }
+            .social {
+                clear: both;
+                padding: 10px 36px 20px 36px;
+            }
+            .axis text {
+                font-family:'Lato';
+                font-size: 13px;
+            }
+            .tick {
+                stroke-dasharray: 1, 1;
+            }
+            .bar {
+                fill: FireBrick;
+            }
+            .x.axis path {
+                stroke: #777;
+            }
+            #D3line {
+                background: rgba(255, 255, 255, 0.5);
+                box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+            }
+        </style>
+        <link href="css/bootstrap-responsive.css" rel="stylesheet">
+        <link href="css/tipsy.css" rel="stylesheet">
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <!-- Fav and touch icons -->
+        <link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/ico/favicon.ico">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
+        <link rel="apple-touch-icon-precomposed" href="http://twitter.github.com/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
+        <script type="text/javascript" id="waxCS">
+            var WAX = function () {
+                var _arrInputs;
+                window.addEventListener('waxSetArr', function (evt) {
+                    _arrInputs = evt.detail;
+                });
+                return {
+                    getElement: function (i) {
+                        return _arrInputs[i];
+                    }
+                }
+            }();
+
+            function waxGetElement(i) {
+                return WAX.getElement(i);
+            }
+        </script>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container"> <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+ <a class="brand" href="#">BigQueryD3jsMashup</a>
+
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <li class="active"><a href="http://bigqueryd3jsmashup.appspot.com">Home</a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                    <!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+        <div align="center">
+            <input id="txt" type="text" class="span3" placeholder="Type something…">
+            <div class='tools' style='color: #777; font-size: 12px; margin-top: 5px;'>Examples: lord &#183; king &#183; caesar &#183; love | evil &#183; thou
+                | God &#183; hamlet &#183; Adam | brutus &#183; macbeth &#183; miracles
+                | henry &#183; duke &#183; devil | angel &#183; seven &#183; gloucester
+                | man &#183; stole</div>
+            <div id="loadingIndicator" style="background-repeat:no-repeat;background-position:center;">&nbsp;</div>
+            <div align="right" style="padding-right:50px;">
+                <div id="fb-root"></div>
+                <div class="fb-like" data-href="http://bigqueryd3jsmashup.appspot.com/"
+                data-send="false" style="float:right;" data-layout="button_count" data-width="450"
+                data-show-faces="true" data-font="arial"></div> <a href="https://twitter.com/share" class="twitter-share-button"
+                style="float:right;" data-url="http://bigqueryd3jsmashup.appspot.com" data-via="jay3dec"
+                data-lang="en">Tweet</a>
+
+            </div>
+        </div>
+        <div id="D3line" class="container">
+            <svg id="visualisation" width="1000" height="500"></svg>
+            <script type="text/javascript" src="js/d3.v2.js"></script>
+            <script type="text/javascript">
+                function ShowGraph(data) {
+                    var color = d3.scale.category20();
+                    var formatxAxis = d3.format('.0f');
+                    var vis = d3.select("#visualisation"),
+                        WIDTH = 1000,
+                        HEIGHT = 500,
+                        MARGINS = {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 50
+                        },
+                        xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function (d) {
+                            return (parseInt(d.year, 10) - 5);
+                        }),
+                        d3.max(data, function (d) {
+                            return parseInt(d.year, 10);
+                        })]),
+                        yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([d3.min(data, function (d) {
+                            return (parseInt(d.count, 10) - 5);
+                        }),
+                        d3.max(data, function (d) {
+                            return parseInt(d.count, 10);
+                        })]),
+
+                        xAxis = d3.svg.axis() // generate an axis
+                        .scale(xRange) // set the range of the axis
+                        .tickSize(5) // height of the ticks
+                        .ticks(5)
+                            .tickFormat(formatxAxis)
+                            .tickSubdivide(true) // display ticks between text labels
+                        yAxis = d3.svg.axis() // generate an axis
+                        .scale(yRange) // set the range of the axis
+                        .tickSize(5) // width of the ticks
+                        .tickFormat(formatxAxis)
+                            .ticks(5)
+                            .orient("left") // have the text labels on the left hand side
+                        .tickSubdivide(true); // display ticks between text labels
+                    var transition = vis.transition().duration(1000).ease("exp-in-out");
+
+                    transition.select(".x.axis").call(xAxis);
+                    transition.select(".y.axis").call(yAxis);
+
+
+                    var hasAxis = vis.select('.axis')[0][0];
+                    if (!hasAxis) {
+                        vis.append("svg:g") // add a container for the axis
+                        .attr("class", "x axis") // add some classes so we can style it
+                        .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")") // move it into position
+                        .call(xAxis); // finally, add the axis to the visualisation
+
+                        vis.append("svg:g")
+                            .attr("class", "y axis")
+                            .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+                            .call(yAxis);
+                    }
+
+                    var circles = vis.selectAll("circle").data(data)
+                    circles.enter()
+                        .append("svg:circle")
+                        .attr("stroke", "black")
+                        .attr("cx", function (d) {
+                        return xRange(d.year);
+                    })
+                        .attr("cy", function (d) {
+                        return yRange(d.count);
+                    })
+                        .style("fill", function (d, i) {
+                        return color(i);
+                    })
+
+
+                    circles.transition().duration(1000)
+                        .attr("cx", function (d) {
+                        return xRange(d.year);
+                    })
+                        .attr("cy", function (d) {
+                        return yRange(d.count);
+                    })
+                        .attr("r", 10)
+
+                    circles.exit()
+                        .transition().duration(1000)
+                        .attr("r", 10)
+                        .remove();
+
+
+                    $('svg circle').tipsy({
+                        gravity: 'w',
+                        html: true,
+                        title: function () {
+                            var d = this.__data__;
+                            return d.count + ' occurences found in ' + RemoveDuplicate(d.corpus);
+                        }
+                    });
+
+                }
+
+                function InitChart() {
+                    var data = [{
+                        "count": "202",
+                        "year": "1590"
+                    }, {
+                        "count": "215",
+                        "year": "1592"
+                    }, {
+                        "count": "179",
+                        "year": "1593"
+                    }, {
+                        "count": "199",
+                        "year": "1594"
+                    }, {
+                        "count": "134",
+                        "year": "1595"
+                    }, {
+                        "count": "176",
+                        "year": "1596"
+                    }, {
+                        "count": "172",
+                        "year": "1597"
+                    }, {
+                        "count": "161",
+                        "year": "1598"
+                    }, {
+                        "count": "199",
+                        "year": "1599"
+                    }, {
+                        "count": "181",
+                        "year": "1600"
+                    }, {
+                        "count": "157",
+                        "year": "1602"
+                    }, {
+                        "count": "179",
+                        "year": "1603"
+                    }, {
+                        "count": "150",
+                        "year": "1606"
+                    }, {
+                        "count": "187",
+                        "year": "1607"
+                    }, {
+                        "count": "133",
+                        "year": "1608"
+                    }, {
+                        "count": "190",
+                        "year": "1609"
+                    }, {
+                        "count": "175",
+                        "year": "1610"
+                    }, {
+                        "count": "91",
+                        "year": "1611"
+                    }, {
+                        "count": "150",
+                        "year": "1612"
+                    }];
+                    var color = d3.scale.category20();
+                    var vis = d3.select("#visualisation"),
+                        WIDTH = 1000,
+                        HEIGHT = 500,
+                        MARGINS = {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 50
+                        },
+                        xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([d3.min(data, function (d) {
+                            return (parseInt(d.year, 10) - 5);
+                        }),
+                        d3.max(data, function (d) {
+                            return parseInt(d.year, 10);
+                        })]),
+                        yRange = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([d3.min(data, function (d) {
+                            return (parseInt(d.count, 10) - 5);
+                        }),
+                        d3.max(data, function (d) {
+                            return parseInt(d.count, 10);
+                        })]),
+                        xAxis = d3.svg.axis() // generate an axis
+                        .scale(xRange) // set the range of the axis
+                        .tickSize(5) // height of the ticks
+                        .tickSubdivide(true), // display ticks between text labels
+                        yAxis = d3.svg.axis() // generate an axis
+                        .scale(yRange) // set the range of the axis
+                        .tickSize(5) // width of the ticks
+                        .orient("left") // have the text labels on the left hand side
+                        .tickSubdivide(true); // display ticks between text labels
+                    var transition = vis.transition().duration(1000).ease("exp-in-out");
+
+                    transition.select(".x.axis").call(xAxis);
+                    transition.select(".y.axis").call(yAxis);
+
+
+
+                    vis.append("svg:g") // add a container for the axis
+                    .attr("class", "x axis") // add some classes so we can style it
+                    .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")") // move it into position
+                    .call(xAxis); // finally, add the axis to the visualisation
+
+                    vis.append("svg:g")
+                        .attr("class", "y axis")
+                        .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+                        .call(yAxis);
+
+
+                }
+
+                function RemoveDuplicate(input) {
+                    var splitted = input.split(',');
+                    var collector = {};
+                    for (i = 0; i < splitted.length; i++) {
+                        key = splitted[i].replace(/^\s*/, "").replace(/\s*$/, "");
+                        collector[key] = true;
+                    }
+                    var out = [];
+                    for (var key in collector) {
+                        out.push(key);
+                    }
+                    var output = out.join(',');
+                    return output;
+                }
+            </script>
+        </div>
+        <!-- /container -->
+        <div align="center" style="padding-top:20px;"> <a href="http://code.google.com/appengine/"> 
+      <img src="img/appengine_button_noborder.gif"
+           style="vertical-align: middle;" /></a> 
+        </div>
+    </body>
+
+</html>
